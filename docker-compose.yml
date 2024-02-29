@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+    wnpos-api-php:
+        build:
+            context: "./docker-php"
+        working_dir: /var/www/laravel
+        environment:
+            - "APP_ENV=dev"
+            - "APP_DEBUG=true"
+        volumes:
+            - ../.././api_wongnai_pos:/var/www/laravel
+        env_file:
+            - .env.local
+
+    wnpos-api-nginx:
+        build: ./docker-nginx
+        container_name: nginx_wnpos_api
+        working_dir: /var/www/laravel # directory ที่จะเป็นจัดที่เราทำงาน
+        volumes_from:
+            - wnpos-api-php
+        ports:
+            - "84:80"
+
+    wnpos-api-composer: # เป็น container สำหรับการรัน install package laravel ที่จะสั่งรันครั้งเดียวแล้วหยุดรัน container ไป
+        build: ./docker-php # ใช้ dockerfile เดียวกันกับ container php
+        working_dir: /var/www/laravel
+        volumes_from:
+            - wnpos-api-php
+        command: "composer install"
